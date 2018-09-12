@@ -3,8 +3,8 @@ var bodyParser = require('body-parser');
 var exphbs = require('express-handlebars');
 var DBConnect = require('./tools/db.js');
 var path = require('path');
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+//var passport = require('passport');
+//var LocalStrategy = require('passport-local').Strategy;
 var expressValidator = require('express-validator');
 var flash = require('connect-flash');
 var cookieParser = require('cookie-parser');
@@ -38,8 +38,8 @@ app.use(session({
 }));
 
 // Passport init
-app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.initialize());
+//app.use(passport.session());
 
 // Express Validator
 app.use(expressValidator({

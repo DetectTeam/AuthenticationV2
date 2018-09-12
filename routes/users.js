@@ -7,9 +7,16 @@ var User = require('../models/user');
 var uuidv1 = require('uuid/v1');
 
 var uid = '';
+
+// Passport init
+router.use(passport.initialize());
+router.use(passport.session());
+
+
 //Registration End Point
 router.post( '/register', function( req, res )
 {
+
 
   console.log( req.body );
 
@@ -64,36 +71,39 @@ router.post( '/register', function( req, res )
                     res.status(201).send( message );
                   }
                   else {
-                    status = 200;
+
                     message = {'message':'user-exists'};
-                    res.status(200).send( message );
+                    res.status(409).send( message );
                   }
           });
 
     }
     else
     {
-        status = 200;
         message = errors;
-        res.status(status).send( message );
+        res.status(422).send( message );
     }
 
 });
 
-passport.use(new LocalStrategy(
-	function (username, password, done) {
-    console.log( 'PASSPORT WORKING' );
+passport.use('local', new LocalStrategy(
+	function (username, password, done)
+  {
+
+    if( username.length === '' )
+    {
+      console.log( "username not defined.." );
+    }
+
 		User.getUserByUsername(username, function (err, user) {
 			if (err) throw err;
 			if (!user) {
-        console.log('NOT USER');
 				return done(null, false, { message: 'Unknown User' });
 			}
 
 			User.comparePassword(password, user.password, function (err, isMatch) {
 				if (err) throw err;
 				if (isMatch) {
-          console.log('password match');
 					return done(null, user);
 				} else {
           console.log('Invalid password');
@@ -117,14 +127,45 @@ passport.deserializeUser(function (id, done) {
     res.send( 'login get' );
   });
 
-  router.post('/login',
-	passport.authenticate('local', { successRedirect: '/', failureRedirect: '/users/login', failureFlash: true }),
-	function (req, res) {
 
-    res.send( req.body );
+  router.post('/login', (req, res) => {
+    passport.authenticate('local', function (err, user, info) {
+        if (err) {
+            return res.status(401).json(err);
+        }
+        if (user) {
+          //  const token = user.generateJwt();
+            return res.status(200).json({
+                "token": "yay im a token...."
+            });
+        } else {
+            res.status(401).json(info);
+        }
+    })(req, res)
+})
 
-		res.redirect('/');
-	});
+
+  // router.post( '/login', Auth );
+  //
+  //
+  //   function Auth( req, res, next)
+  //   {
+  //       passport.authenticate('local',
+  //       {
+  //         successRedirect: '/',
+  //         failureRedirect: '/users/login'
+  //       } ,function(err, user, info)
+  //       {
+  //         console.log( 'I got called' );
+  //       res.send('This Works ok......');
+  //     })(req,res,next);
+  //
+  //   }
+
+
+
+
+
 
   router.get('/logout', function (req, res)
   {
